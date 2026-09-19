@@ -21,6 +21,23 @@ export interface ImportantWord {
   example: string;
   tamilExample: string;
   partOfSpeech?: string;
+  topicNumber?: number;
+  glossaryTopic?: string;
+  similarityScore?: number;
+  englishDefinition?: string;
+  englishExplanation?: string;
+  tamilDefinition?: string;
+}
+
+export interface GlossaryMatch {
+  topicNumber: number;
+  topic: string;
+  matchedKeyword: string;
+  similarityScore: number;
+  englishDefinition: string;
+  englishExplanation: string;
+  tamilDefinition: string;
+  tamilExplanation: string;
 }
 
 export interface LessonSegment {
@@ -43,9 +60,24 @@ export interface TranscriptionResult {
   timestamp: number;
 }
 
-export interface LanguageOption {
-  code: string;
-  name: string;
-  nativeName: string;
-  sampleText: string;
+export interface SentenceAnalysisResponse {
+  topic: string;
+  englishSentence: string;
+  tamilMeaning: string;
+  tanglishMeaning: string;
+  importantWords: ImportantWord[];
+  preservedKeywords?: string[];
+  glossaryMatches?: GlossaryMatch[];
+}
+
+export interface LessonState {
+  finalizedTranscript: string;
+  interimTranscript: string;
+  topic: string;
+  tamilMeaning: string;
+  tanglishMeaning: string;
+  vocabulary: ImportantWord[];
+  selectedWordId: string | null;
+  preservedKeywords?: string[];
+  glossaryMatches?: GlossaryMatch[];
 }

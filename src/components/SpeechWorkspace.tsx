@@ -4,18 +4,24 @@
  */
 
 import React from 'react';
-import { RecordingState, LessonSegment, ImportantWord } from '../types.ts';
+import { RecordingState, ImportantWord, GlossaryMatch } from '../types.ts';
 import { ImportantWordsList } from './ImportantWordsList.tsx';
 import { LiveLessonSentence } from './LiveLessonSentence.tsx';
 import { TamilMeaningPanel } from './TamilMeaningPanel.tsx';
-import { RecordingControls } from './RecordingControls.tsx';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 
 interface SpeechWorkspaceProps {
   state: RecordingState;
-  currentLesson: LessonSegment | null;
+  finalizedSentence: string;
+  interimSentence: string;
+  topic: string;
+  tamilMeaning: string;
+  tanglishMeaning: string;
+  vocabulary: ImportantWord[];
   selectedWord: ImportantWord | null;
   selectedWordId: string | null;
+  preservedKeywords?: string[];
+  glossaryMatches?: GlossaryMatch[];
   onSelectWord: (wordId: string) => void;
   recordingDuration: number;
   audioLevel: number;
@@ -24,15 +30,21 @@ interface SpeechWorkspaceProps {
   onStopRecording: () => void;
   onReset: () => void;
   onRetry: () => void;
-  onSwitchLesson: (index: number) => void;
-  allLessons: LessonSegment[];
+  onSelectQuickPrompt: (prompt: string, topic?: string) => void;
 }
 
 export const SpeechWorkspace: React.FC<SpeechWorkspaceProps> = ({
   state,
-  currentLesson,
+  finalizedSentence,
+  interimSentence,
+  topic,
+  tamilMeaning,
+  tanglishMeaning,
+  vocabulary,
   selectedWord,
   selectedWordId,
+  preservedKeywords = [],
+  glossaryMatches = [],
   onSelectWord,
   recordingDuration,
   audioLevel,
@@ -41,112 +53,111 @@ export const SpeechWorkspace: React.FC<SpeechWorkspaceProps> = ({
   onStopRecording,
   onReset,
   onRetry,
-  onSwitchLesson,
-  allLessons,
+  onSelectQuickPrompt,
 }) => {
-  const combinedTextForCopy = currentLesson
-    ? `English: ${currentLesson.englishText}\n\nTamil: ${currentLesson.tamilMeaning}\nTanglish: ${currentLesson.tanglishMeaning}`
+  const combinedTextForCopy = finalizedSentence
+    ? `English: ${finalizedSentence}\n\nTamil: ${tamilMeaning}\nTanglish: ${tanglishMeaning}`
     : '';
 
   return (
-    <main className="w-full flex-1 flex flex-col justify-center items-center px-4 sm:px-6 lg:px-10 py-5 sm:py-7">
-      {/* 1. OUTER APPLICATION SHELL */}
-      <section
-        id="vaani-learning-workspace"
-        aria-label="Vaani AI English Learning Workspace"
-        className="w-full bg-[#edf2f7] border border-slate-200/90 shadow-[0_4px_24px_rgba(15,23,42,0.03)] transition-all duration-300"
-        style={{
-          width: 'min(1500px, calc(100vw - 80px))',
-          maxWidth: '1500px',
-          margin: '0 auto',
-          borderRadius: '32px',
-          padding: '28px',
-        }}
-      >
-        {/* INNER WHITE APPLICATION SURFACE */}
-        <div
-          id="learning-workspace-inner"
-          className="w-full bg-white border border-slate-200/70 shadow-xs flex flex-col justify-between"
-          style={{
-            borderRadius: '24px',
-            padding: '28px',
-          }}
-        >
-          {/* Error Banner if mic or state failed */}
-          {errorMessage && (
-            <div
-              role="alert"
-              className="mb-4 bg-red-50 border border-red-200 rounded-xl p-3 flex items-center justify-between gap-3 text-red-900 text-[13px]"
+    <main className="w-full flex-1 min-h-0 flex flex-col justify-center items-center py-2 sm:py-3 lg:py-4 px-3 sm:px-6 lg:px-8">
+      {/* Container holding the three independent floating cards */}
+      <div className="w-full max-w-[1500px] mx-auto flex flex-col gap-3 sm:gap-4 min-h-0">
+        {/* Error Banner if mic or state failed */}
+        {errorMessage && (
+          <div
+            role="alert"
+            className="w-full bg-red-50 border border-red-200 rounded-2xl p-3 flex items-center justify-between gap-3 text-red-900 text-[13px] shadow-xs animate-in fade-in duration-150 shrink-0"
+          >
+            <div className="flex items-center gap-2.5">
+              <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+            <button
+              type="button"
+              onClick={onRetry}
+              className="shrink-0 inline-flex items-center gap-1 px-3 py-1 bg-white border border-red-200 rounded-full text-[12px] font-medium text-red-800 hover:bg-red-50 transition-colors"
             >
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
-                <span>{errorMessage}</span>
-              </div>
-              <button
-                type="button"
-                onClick={onRetry}
-                className="shrink-0 inline-flex items-center gap-1 px-3 py-1 bg-white border border-red-200 rounded-full text-[12px] font-medium text-red-800 hover:bg-red-50"
-              >
-                <RefreshCw className="w-3 h-3" />
-                <span>Retry</span>
-              </button>
-            </div>
-          )}
-
-          {/* ========================================================================= */}
-          {/* THREE-COLUMN GRID ON DESKTOP / STACKED ON MOBILE (<900px) */}
-          {/* Desktop: 260px Left | minmax(0, 1fr) Center | 320px Right */}
-          {/* Mobile order: 1. Live Lesson -> 2. Tamil Understanding -> 3. Important Words */}
-          {/* ========================================================================= */}
-          <div className="flex flex-col lg:grid lg:grid-cols-[260px_minmax(0,1fr)_320px] gap-6 xl:gap-8 items-stretch">
-            {/* LEFT PANEL: Important Words (260px) */}
-            <div className="order-3 lg:order-1 w-full lg:w-[260px] lg:border-r lg:border-slate-100 lg:pr-6 pt-5 lg:pt-0 border-t lg:border-t-0 border-slate-100 flex flex-col">
-              <ImportantWordsList
-                words={currentLesson?.importantWords || []}
-                selectedWordId={selectedWordId}
-                onSelectWord={onSelectWord}
-                isLive={state === 'recording'}
-              />
-            </div>
-
-            {/* CENTER PANEL: Live Lesson Hero (flexible minmax(0, 1fr)) */}
-            <div className="order-1 lg:order-2 flex-1 flex flex-col lg:px-4 min-w-0">
-              <LiveLessonSentence
-                sentence={currentLesson?.englishText || ''}
-                topic={currentLesson?.topic}
-                importantWords={currentLesson?.importantWords || []}
-                selectedWordId={selectedWordId}
-                onSelectWord={onSelectWord}
-                state={state}
-                audioDuration={recordingDuration}
-                audioLevel={audioLevel}
-              />
-            </div>
-
-            {/* RIGHT PANEL: Understand in Tamil (320px) */}
-            <div className="order-2 lg:order-3 w-full lg:w-[320px] lg:border-l lg:border-slate-100 lg:pl-6 pt-5 lg:pt-0 border-t lg:border-t-0 border-slate-100 flex flex-col">
-              <TamilMeaningPanel
-                tamilMeaning={currentLesson?.tamilMeaning || ''}
-                tanglishMeaning={currentLesson?.tanglishMeaning || ''}
-                selectedWord={selectedWord}
-              />
-            </div>
+              <RefreshCw className="w-3 h-3" />
+              <span>Retry</span>
+            </button>
           </div>
+        )}
 
-          {/* UNIFIED BOTTOM RECORDING & LESSON CONTROLS */}
-          <RecordingControls
-            state={state}
-            recordingDuration={recordingDuration}
-            onStartRecording={onStartRecording}
-            onStopRecording={onStopRecording}
-            onReset={onReset}
-            onSwitchLesson={onSwitchLesson}
-            allLessons={allLessons}
-            currentLessonId={currentLesson?.id || ''}
-            combinedTextForCopy={combinedTextForCopy}
-          />
+        {/* ========================================================================= */}
+        {/* THREE INDEPENDENT FLOATING CARDS */}
+        {/* Desktop: 270px Left | 1fr Center | 330px Right */}
+        {/* All cards fit cleanly within the viewport height without page-level vertical overflow */}
+        {/* Mobile order: 1. Center -> 2. Right -> 3. Left */}
+        {/* ========================================================================= */}
+        <div
+          id="vaani-workspace-grid"
+          className="w-full grid grid-cols-1 lg:grid-cols-[270px_minmax(0,1fr)_330px] xl:grid-cols-[280px_minmax(560px,1fr)_340px] gap-4 sm:gap-5 lg:gap-6 items-stretch"
+        >
+          {/* ===================================================================== */}
+          {/* 1. LEFT CARD: IMPORTANT WORDS */}
+          {/* ===================================================================== */}
+          <aside
+            id="panel-important-words"
+            aria-label="Important Vocabulary Words"
+            className="order-3 lg:order-1 w-full bg-white border border-slate-200/80 rounded-[28px] p-4 sm:p-5 shadow-[0_4px_24px_rgba(15,23,42,0.03)] flex flex-col h-[480px] lg:h-[calc(100vh-140px)] lg:max-h-[640px] lg:min-h-[500px] overflow-hidden transition-all duration-200 hover:shadow-[0_6px_30px_rgba(15,23,42,0.05)]"
+          >
+            <ImportantWordsList
+              words={vocabulary}
+              selectedWordId={selectedWordId}
+              onSelectWord={onSelectWord}
+              isLive={state === 'recording'}
+            />
+          </aside>
+
+          {/* ===================================================================== */}
+          {/* 2. CENTER CARD: LIVE LESSON SPEECH-TO-TEXT WORKSPACE (HERO) */}
+          {/* Fits naturally within viewport, internally scrollable only if transcript is long */}
+          {/* ===================================================================== */}
+          <section
+            id="panel-live-lesson"
+            aria-label="Live Speech-to-Text Lesson Workspace"
+            className="order-1 lg:order-2 w-full flex-1 min-w-0 bg-white border border-slate-200/80 rounded-[28px] p-4 sm:p-6 lg:p-7 shadow-[0_4px_24px_rgba(15,23,42,0.03)] flex flex-col h-[520px] lg:h-[calc(100vh-140px)] lg:max-h-[640px] lg:min-h-[500px] overflow-hidden transition-all duration-200 hover:shadow-[0_6px_30px_rgba(15,23,42,0.05)]"
+          >
+            <LiveLessonSentence
+              finalizedSentence={finalizedSentence}
+              interimSentence={interimSentence}
+              topic={topic}
+              importantWords={vocabulary}
+              selectedWordId={selectedWordId}
+              onSelectWord={onSelectWord}
+              state={state}
+              audioDuration={recordingDuration}
+              audioLevel={audioLevel}
+              onStartRecording={onStartRecording}
+              onStopRecording={onStopRecording}
+              onReset={onReset}
+              combinedTextForCopy={combinedTextForCopy}
+              preservedKeywords={preservedKeywords}
+              glossaryMatches={glossaryMatches}
+              onSelectQuickPrompt={onSelectQuickPrompt}
+            />
+          </section>
+
+          {/* ===================================================================== */}
+          {/* 3. RIGHT CARD: TAMIL EXPLANATION & UNDERSTANDING */}
+          {/* ===================================================================== */}
+          <aside
+            id="panel-tamil-explanation"
+            aria-label="Tamil Lesson Explanation"
+            className="order-2 lg:order-3 w-full bg-white border border-slate-200/80 rounded-[28px] p-4 sm:p-5 shadow-[0_4px_24px_rgba(15,23,42,0.03)] flex flex-col h-[480px] lg:h-[calc(100vh-140px)] lg:max-h-[640px] lg:min-h-[500px] overflow-hidden transition-all duration-200 hover:shadow-[0_6px_30px_rgba(15,23,42,0.05)]"
+          >
+            <TamilMeaningPanel
+              tamilMeaning={tamilMeaning}
+              tanglishMeaning={tanglishMeaning}
+              selectedWord={selectedWord}
+              preservedKeywords={preservedKeywords}
+              glossaryMatches={glossaryMatches}
+              onSelectWord={onSelectWord}
+            />
+          </aside>
         </div>
-      </section>
+      </div>
     </main>
   );
 };

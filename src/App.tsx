@@ -4,18 +4,34 @@
  */
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { RecordingState, LessonSegment, ImportantWord } from './types.ts';
+import { RecordingState } from './types.ts';
 import { Navbar } from './components/Navbar.tsx';
 import { SpeechWorkspace } from './components/SpeechWorkspace.tsx';
-import { learningService, SAMPLE_LESSONS } from './services/learningService.ts';
+import { learningService } from './services/learningService.ts';
+import { speechToTextService } from './services/speechToTextService.ts';
+import { useLessonStore } from './services/lessonStore.ts';
 import { X, CheckCircle2, GraduationCap, Sparkles } from 'lucide-react';
 
 export default function App() {
-  // Primary lesson state: defaults to first real-life classroom scenario
-  const [currentLesson, setCurrentLesson] = useState<LessonSegment>(SAMPLE_LESSONS[0]);
-  const [selectedWordId, setSelectedWordId] = useState<string | null>(
-    SAMPLE_LESSONS[0].importantWords[0]?.id || null
-  );
+  const {
+    finalizedTranscript,
+    interimTranscript,
+    topic,
+    tamilMeaning,
+    tanglishMeaning,
+    vocabulary,
+    selectedWordId,
+    selectedWord,
+    preservedKeywords,
+    glossaryMatches,
+    updateInterim,
+    appendFinalized,
+    applyAnalysis,
+    selectWord,
+    resetLesson,
+    setIsAnalyzing,
+    setDirectSentence,
+  } = useLessonStore();
 
   const [state, setState] = useState<RecordingState>('idle');
   const [recordingDuration, setRecordingDuration] = useState(0);
@@ -23,156 +39,110 @@ export default function App() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeModal, setActiveModal] = useState<'contact' | 'dashboard' | null>(null);
 
-  // Audio recording references
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
   const timerIntervalRef = useRef<number | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const analysisDebounceTimerRef = useRef<number | null>(null);
 
-  // Stop audio streams & cleanup
-  const stopAudioStreams = useCallback(() => {
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-      animationFrameRef.current = null;
-    }
+  // Clean up recording timers & audio resources
+  const stopAudioPipeline = useCallback(() => {
+    speechToTextService.stop();
     if (timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current);
       timerIntervalRef.current = null;
     }
-    if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
-      mediaStreamRef.current = null;
-    }
-    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-      audioContextRef.current.close().catch(() => {});
-      audioContextRef.current = null;
+    if (analysisDebounceTimerRef.current) {
+      clearTimeout(analysisDebounceTimerRef.current);
+      analysisDebounceTimerRef.current = null;
     }
     setAudioLevel(0);
   }, []);
 
   useEffect(() => {
     return () => {
-      stopAudioStreams();
+      stopAudioPipeline();
     };
-  }, [stopAudioStreams]);
+  }, [stopAudioPipeline]);
 
-  // Audio visualizer loop for responsive frequency levels
-  const startAudioVisualizer = (stream: MediaStream) => {
-    try {
-      const AudioCtx =
-        window.AudioContext ||
-        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (!AudioCtx) return;
+  /**
+   * Helper to analyze a finalized classroom sentence using Gemini
+   */
+  const triggerSentenceAnalysis = useCallback(
+    (sentence: string) => {
+      const cleanSentence = sentence.trim();
+      if (!cleanSentence) return;
 
-      const audioCtx = new AudioCtx();
-      audioContextRef.current = audioCtx;
-      const source = audioCtx.createMediaStreamSource(stream);
-      const analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 64;
-      analyser.smoothingTimeConstant = 0.6;
-      source.connect(analyser);
-      analyserRef.current = analyser;
-
-      const bufferLength = analyser.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
-
-      const updateLevel = () => {
-        if (!analyserRef.current) return;
-        analyserRef.current.getByteFrequencyData(dataArray);
-
-        let sum = 0;
-        for (let i = 0; i < bufferLength; i++) {
-          sum += dataArray[i];
-        }
-        const avg = sum / bufferLength;
-        const normalized = Math.min(1, Math.max(0, avg / 128));
-        setAudioLevel(normalized);
-
-        animationFrameRef.current = requestAnimationFrame(updateLevel);
-      };
-
-      updateLevel();
-    } catch {
-      // Gentle subtle simulated wave fallback
-      const simulatedWave = () => {
-        setAudioLevel(0.3 + Math.sin(Date.now() / 200) * 0.25);
-        animationFrameRef.current = requestAnimationFrame(simulatedWave);
-      };
-      simulatedWave();
-    }
-  };
-
-  // Start recording action
-  const handleStartRecording = async () => {
-    setErrorMessage(null);
-
-    if (!navigator?.mediaDevices?.getUserMedia) {
-      setState('error');
-      setErrorMessage(
-        'Microphone access is not supported by your browser environment.'
-      );
-      return;
-    }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaStreamRef.current = stream;
-
-      audioChunksRef.current = [];
-
-      let mimeType = 'audio/webm';
-      if (typeof MediaRecorder.isTypeSupported === 'function') {
-        if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-          mimeType = 'audio/webm;codecs=opus';
-        } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
-          mimeType = 'audio/mp4';
-        }
+      if (analysisDebounceTimerRef.current) {
+        clearTimeout(analysisDebounceTimerRef.current);
       }
 
-      const recorder = new MediaRecorder(stream, { mimeType });
-      mediaRecorderRef.current = recorder;
-
-      recorder.ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      recorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, {
-          type: recorder.mimeType || 'audio/webm',
-        });
-
-        // Set state to "Understanding..." processing state
-        setState('processing');
-
+      analysisDebounceTimerRef.current = window.setTimeout(async () => {
         try {
-          // Process audio through the learning pipeline
-          const nextLesson = await learningService.processAudioLesson(audioBlob);
-          setCurrentLesson(nextLesson);
-          setSelectedWordId(nextLesson.importantWords[0]?.id || null);
-          setState('completed');
-        } catch {
-          setState('error');
-          setErrorMessage('Failed to process classroom audio. Please try again.');
+          setIsAnalyzing(true);
+          const analysis = await learningService.analyzeSentence(cleanSentence);
+          applyAnalysis(analysis);
+        } catch (err) {
+          console.warn('Real-time sentence analysis error:', err);
+        } finally {
+          setIsAnalyzing(false);
         }
-      };
+      }, 400);
+    },
+    [applyAnalysis, setIsAnalyzing]
+  );
 
-      recorder.start(250);
-      setState('recording');
-      setRecordingDuration(0);
+  /**
+   * Start real-time Gemini Live Speech-to-Text session
+   * Streams 16-bit 16kHz mono PCM audio over WebSocket to gemini-3.5-transcribe-live
+   */
+  const handleStartRecording = async () => {
+    setErrorMessage(null);
+    stopAudioPipeline();
 
-      // Start duration counter
-      timerIntervalRef.current = window.setInterval(() => {
-        setRecordingDuration((prev) => prev + 1);
-      }, 1000);
+    // Reset recording timer
+    setRecordingDuration(0);
+    setState('recording');
 
-      startAudioVisualizer(stream);
+    // Start listening duration timer
+    timerIntervalRef.current = window.setInterval(() => {
+      setRecordingDuration((prev) => prev + 1);
+    }, 1000);
+
+    try {
+      await speechToTextService.start({
+        onReady: () => {
+          setState('recording');
+        },
+        onInterimTranscript: (interim: string) => {
+          console.log('interim transcript received:', interim);
+          // Show live interim words in Center card without saving to finalized
+          updateInterim(interim);
+        },
+        onFinalTranscript: (finalSegment: string) => {
+          console.log('final transcript received:', finalSegment);
+          // Append finalized sentence to transcript
+          appendFinalized(finalSegment);
+
+          // Trigger Gemini analysis for 2-5 important words, Tamil meaning, & examples
+          triggerSentenceAnalysis(finalSegment);
+        },
+        onAudioLevel: (level: number) => {
+          setAudioLevel(level);
+        },
+        onError: (err: Error) => {
+          console.error('Gemini errors:', err);
+          stopAudioPipeline();
+          setState('error');
+          setErrorMessage(
+            err.message || 'Unable to connect to Gemini Live transcription. Please try again.'
+          );
+        },
+        onClose: () => {
+          if (state === 'recording') {
+            handleStopRecording();
+          }
+        },
+      });
     } catch (err: unknown) {
-      stopAudioStreams();
+      stopAudioPipeline();
       setState('error');
 
       const error = err as { name?: string; message?: string };
@@ -181,7 +151,7 @@ export default function App() {
         error.name === 'PermissionDeniedError'
       ) {
         setErrorMessage(
-          'Microphone access is required to listen to English lessons. Please allow microphone permissions.'
+          'Microphone access is required to listen to English lessons. Please allow microphone permissions in your browser.'
         );
       } else if (
         error.name === 'NotFoundError' ||
@@ -192,50 +162,54 @@ export default function App() {
         );
       } else {
         setErrorMessage(
-          error.message || 'Microphone access is required to listen to lessons.'
+          error.message || 'Failed to start Gemini Live transcription session.'
         );
       }
     }
   };
 
-  // Stop recording action
+  /**
+   * Stop recording action
+   */
   const handleStopRecording = () => {
-    if (
-      mediaRecorderRef.current &&
-      mediaRecorderRef.current.state !== 'inactive'
-    ) {
-      mediaRecorderRef.current.stop();
+    speechToTextService.stop();
+
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
     }
-    stopAudioStreams();
+    setAudioLevel(0);
+    setState('completed');
   };
 
-  // Reset lesson state
+  /**
+   * Reset entire lesson workspace
+   */
   const handleReset = () => {
-    stopAudioStreams();
-    setCurrentLesson(SAMPLE_LESSONS[0]);
-    setSelectedWordId(SAMPLE_LESSONS[0].importantWords[0]?.id || null);
+    stopAudioPipeline();
+    resetLesson();
     setState('idle');
     setErrorMessage(null);
     setRecordingDuration(0);
+    setAudioLevel(0);
   };
 
-  // Switch between lesson scenarios
-  const handleSwitchLesson = (index: number) => {
-    const lesson = learningService.getLessonByIndex(index);
-    setCurrentLesson(lesson);
-    setSelectedWordId(lesson.importantWords[0]?.id || null);
+  /**
+   * Handle selecting a quick curriculum sample prompt
+   */
+  const handleSelectQuickPrompt = (prompt: string, sampleTopic?: string) => {
+    if (state === 'recording') {
+      stopAudioPipeline();
+    }
+    setDirectSentence(prompt, sampleTopic);
     setState('idle');
     setErrorMessage(null);
+    setRecordingDuration(0);
+    triggerSentenceAnalysis(prompt);
   };
 
-  // Selected word reference
-  const selectedWord: ImportantWord | null =
-    currentLesson?.importantWords.find((w) => w.id === selectedWordId) ||
-    currentLesson?.importantWords[0] ||
-    null;
-
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8fafc] text-slate-900 relative selection:bg-slate-200 font-sans">
+    <div className="min-h-screen flex flex-col bg-[#f8fafc] text-slate-900 relative selection:bg-slate-200 font-sans overflow-x-hidden">
       {/* Top Navigation */}
       <Navbar
         onContactClick={() => setActiveModal('contact')}
@@ -245,10 +219,17 @@ export default function App() {
       {/* Main 3-Panel Learning Workspace */}
       <SpeechWorkspace
         state={state}
-        currentLesson={currentLesson}
+        finalizedSentence={finalizedTranscript}
+        interimSentence={interimTranscript}
+        topic={topic}
+        tamilMeaning={tamilMeaning}
+        tanglishMeaning={tanglishMeaning}
+        vocabulary={vocabulary}
         selectedWord={selectedWord}
         selectedWordId={selectedWordId}
-        onSelectWord={setSelectedWordId}
+        preservedKeywords={preservedKeywords}
+        glossaryMatches={glossaryMatches}
+        onSelectWord={selectWord}
         recordingDuration={recordingDuration}
         audioLevel={audioLevel}
         errorMessage={errorMessage}
@@ -256,12 +237,11 @@ export default function App() {
         onStopRecording={handleStopRecording}
         onReset={handleReset}
         onRetry={handleStartRecording}
-        onSwitchLesson={handleSwitchLesson}
-        allLessons={SAMPLE_LESSONS}
+        onSelectQuickPrompt={handleSelectQuickPrompt}
       />
 
       {/* Minimal Bottom Educational Brand Line */}
-      <footer className="w-full py-4 text-center text-[12px] text-slate-400 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 px-4 border-t border-slate-200/60 mt-auto">
+      <footer className="w-full py-2.5 text-center text-[11.5px] text-slate-400 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 px-4 border-t border-slate-200/60 mt-auto shrink-0">
         <span className="flex items-center gap-1.5 font-medium text-slate-600">
           <GraduationCap className="w-3.5 h-3.5 text-slate-800" />
           <span>Vaani Education AI</span>
@@ -269,7 +249,7 @@ export default function App() {
         <span aria-hidden="true" className="hidden sm:inline">•</span>
         <span>Listen in English, Understand in Tamil</span>
         <span aria-hidden="true" className="hidden sm:inline">•</span>
-        <span>Tamil-Medium Classroom Companion</span>
+        <span>Gemini Live Real-Time Transcription</span>
       </footer>
 
       {/* Modals for Dashboard and Contact */}
