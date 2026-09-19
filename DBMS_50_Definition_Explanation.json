@@ -1,0 +1,306 @@
+{
+  "subject": "DBMS",
+  "format": "Definition and Explanation",
+  "topics": [
+    {
+      "number": 1,
+      "topic": "DBMS",
+      "definition": "DBMS is software used to create, store, manage, and retrieve data from a database.",
+      "explanation": "It provides an interface between users/applications and the database."
+    },
+    {
+      "number": 2,
+      "topic": "Database",
+      "definition": "A database is an organized collection of related data.",
+      "explanation": "It stores data systematically so that it can be easily accessed and managed."
+    },
+    {
+      "number": 3,
+      "topic": "RDBMS",
+      "definition": "RDBMS is a database management system that stores data in tables.",
+      "explanation": "Tables are connected using relationships based on keys."
+    },
+    {
+      "number": 4,
+      "topic": "Table",
+      "definition": "A table is a collection of data arranged in rows and columns.",
+      "explanation": "Rows represent records, while columns represent attributes."
+    },
+    {
+      "number": 5,
+      "topic": "Tuple",
+      "definition": "A tuple is a single row in a relational table.",
+      "explanation": "It represents one complete record of an entity."
+    },
+    {
+      "number": 6,
+      "topic": "Attribute",
+      "definition": "An attribute is a property or characteristic of an entity.",
+      "explanation": "In a table, an attribute is represented by a column."
+    },
+    {
+      "number": 7,
+      "topic": "Primary Key",
+      "definition": "A primary key uniquely identifies each record in a table.",
+      "explanation": "It cannot contain duplicate or NULL values."
+    },
+    {
+      "number": 8,
+      "topic": "Foreign Key",
+      "definition": "A foreign key is an attribute that references a key in another table.",
+      "explanation": "It is mainly used to establish relationships between tables."
+    },
+    {
+      "number": 9,
+      "topic": "Candidate Key",
+      "definition": "A candidate key is an attribute or set of attributes that can uniquely identify a record.",
+      "explanation": "One candidate key is selected as the primary key."
+    },
+    {
+      "number": 10,
+      "topic": "Super Key",
+      "definition": "A super key is a set of attributes that uniquely identifies a record.",
+      "explanation": "It may contain additional attributes that are not necessary for uniqueness."
+    },
+    {
+      "number": 11,
+      "topic": "Alternate Key",
+      "definition": "An alternate key is a candidate key that is not selected as the primary key.",
+      "explanation": "It can still uniquely identify records."
+    },
+    {
+      "number": 12,
+      "topic": "Composite Key",
+      "definition": "A composite key is a key made up of two or more attributes.",
+      "explanation": "Multiple columns together uniquely identify a record."
+    },
+    {
+      "number": 13,
+      "topic": "Unique Key",
+      "definition": "A unique key ensures that values in a column are not duplicated.",
+      "explanation": "It maintains uniqueness among records."
+    },
+    {
+      "number": 14,
+      "topic": "NULL Value",
+      "definition": "NULL represents a missing, unknown, or unavailable value.",
+      "explanation": "NULL is different from zero, an empty string, or a blank space."
+    },
+    {
+      "number": 15,
+      "topic": "Entity",
+      "definition": "An entity is a real-world object about which data is stored.",
+      "explanation": "Examples include a student, employee, product, or department."
+    },
+    {
+      "number": 16,
+      "topic": "Entity Set",
+      "definition": "An entity set is a collection of similar entities.",
+      "explanation": "For example, all students in a college form a student entity set."
+    },
+    {
+      "number": 17,
+      "topic": "ER Diagram",
+      "definition": "An ER diagram is a graphical representation of entities, attributes, and relationships.",
+      "explanation": "It is used to design the structure of a database."
+    },
+    {
+      "number": 18,
+      "topic": "Relationship",
+      "definition": "A relationship represents an association between entities.",
+      "explanation": "For example, a student can enroll in a course."
+    },
+    {
+      "number": 19,
+      "topic": "Cardinality",
+      "definition": "Cardinality defines the number of entities that can participate in a relationship.",
+      "explanation": "Common types are 1:1, 1:N, and M:N."
+    },
+    {
+      "number": 20,
+      "topic": "Normalization",
+      "definition": "Normalization is the process of organizing data to reduce redundancy.",
+      "explanation": "It divides data into related tables to improve consistency."
+    },
+    {
+      "number": 21,
+      "topic": "First Normal Form (1NF)",
+      "definition": "1NF requires every attribute to contain atomic values.",
+      "explanation": "Each cell must contain a single value without repeating groups."
+    },
+    {
+      "number": 22,
+      "topic": "Second Normal Form (2NF)",
+      "definition": "2NF is a relation in 1NF with no partial dependency.",
+      "explanation": "Every non-key attribute must depend on the entire primary key."
+    },
+    {
+      "number": 23,
+      "topic": "Third Normal Form (3NF)",
+      "definition": "3NF is a relation in 2NF with no transitive dependency.",
+      "explanation": "Non-key attributes should depend only on the primary key."
+    },
+    {
+      "number": 24,
+      "topic": "BCNF",
+      "definition": "BCNF is a stronger version of Third Normal Form.",
+      "explanation": "Every determinant in the relation must be a candidate key."
+    },
+    {
+      "number": 25,
+      "topic": "Denormalization",
+      "definition": "Denormalization is the process of intentionally adding redundancy to a database.",
+      "explanation": "It is mainly used to improve query performance."
+    },
+    {
+      "number": 26,
+      "topic": "SQL",
+      "definition": "SQL stands for Structured Query Language and is used to communicate with relational databases.",
+      "explanation": "It is used to create, retrieve, modify, and manage data."
+    },
+    {
+      "number": 27,
+      "topic": "DDL",
+      "definition": "DDL stands for Data Definition Language.",
+      "explanation": "It is used to define and modify database structures using commands such as CREATE, ALTER, and DROP."
+    },
+    {
+      "number": 28,
+      "topic": "DML",
+      "definition": "DML stands for Data Manipulation Language.",
+      "explanation": "It is used to manipulate data using commands such as INSERT, UPDATE, and DELETE."
+    },
+    {
+      "number": 29,
+      "topic": "DCL",
+      "definition": "DCL stands for Data Control Language.",
+      "explanation": "It manages database access permissions using commands such as GRANT and REVOKE."
+    },
+    {
+      "number": 30,
+      "topic": "TCL",
+      "definition": "TCL stands for Transaction Control Language.",
+      "explanation": "It manages transactions using commands such as COMMIT, ROLLBACK, and SAVEPOINT."
+    },
+    {
+      "number": 31,
+      "topic": "SELECT",
+      "definition": "SELECT is an SQL command used to retrieve data from a database.",
+      "explanation": "It allows users to retrieve specific columns or records based on conditions."
+    },
+    {
+      "number": 32,
+      "topic": "JOIN",
+      "definition": "JOIN is an SQL operation used to combine data from multiple tables.",
+      "explanation": "Tables are joined using related columns."
+    },
+    {
+      "number": 33,
+      "topic": "INNER JOIN",
+      "definition": "INNER JOIN returns records that have matching values in both tables.",
+      "explanation": "Non-matching records are excluded from the result."
+    },
+    {
+      "number": 34,
+      "topic": "LEFT JOIN",
+      "definition": "LEFT JOIN returns all records from the left table and matching records from the right table.",
+      "explanation": "Non-matching right-side values are represented as NULL."
+    },
+    {
+      "number": 35,
+      "topic": "RIGHT JOIN",
+      "definition": "RIGHT JOIN returns all records from the right table and matching records from the left table.",
+      "explanation": "Non-matching left-side values are represented as NULL."
+    },
+    {
+      "number": 36,
+      "topic": "FULL OUTER JOIN",
+      "definition": "FULL OUTER JOIN returns matching and non-matching records from both tables.",
+      "explanation": "Missing values from either table are represented as NULL."
+    },
+    {
+      "number": 37,
+      "topic": "View",
+      "definition": "A view is a virtual table created from an SQL query.",
+      "explanation": "It does not normally store the actual data separately and displays data from underlying tables."
+    },
+    {
+      "number": 38,
+      "topic": "Index",
+      "definition": "An index is a database structure used to speed up data retrieval.",
+      "explanation": "It improves search performance but may require additional storage."
+    },
+    {
+      "number": 39,
+      "topic": "Transaction",
+      "definition": "A transaction is a sequence of database operations treated as one logical unit.",
+      "explanation": "It either completes successfully or is rolled back according to transaction rules."
+    },
+    {
+      "number": 40,
+      "topic": "ACID Properties",
+      "definition": "ACID represents Atomicity, Consistency, Isolation, and Durability.",
+      "explanation": "These properties ensure reliable and correct transaction processing."
+    },
+    {
+      "number": 41,
+      "topic": "Atomicity",
+      "definition": "Atomicity means a transaction is completely executed or not executed at all.",
+      "explanation": "If any operation fails, the entire transaction can be rolled back."
+    },
+    {
+      "number": 42,
+      "topic": "Consistency",
+      "definition": "Consistency ensures that a transaction moves the database from one valid state to another.",
+      "explanation": "All defined database constraints must remain satisfied."
+    },
+    {
+      "number": 43,
+      "topic": "Isolation",
+      "definition": "Isolation ensures that concurrent transactions do not improperly interfere with each other.",
+      "explanation": "Intermediate changes of one transaction are controlled from affecting another transaction."
+    },
+    {
+      "number": 44,
+      "topic": "Durability",
+      "definition": "Durability ensures that committed transaction changes are permanently stored.",
+      "explanation": "The changes remain available even after a system failure."
+    },
+    {
+      "number": 45,
+      "topic": "Concurrency Control",
+      "definition": "Concurrency control manages simultaneous database transactions.",
+      "explanation": "It prevents conflicts and maintains database consistency."
+    },
+    {
+      "number": 46,
+      "topic": "Deadlock",
+      "definition": "Deadlock occurs when transactions wait indefinitely for resources held by each other.",
+      "explanation": "Neither transaction can continue until the deadlock is resolved."
+    },
+    {
+      "number": 47,
+      "topic": "Stored Procedure",
+      "definition": "A stored procedure is a precompiled collection of SQL statements stored in the database.",
+      "explanation": "It can be executed repeatedly to perform a specific database operation."
+    },
+    {
+      "number": 48,
+      "topic": "Trigger",
+      "definition": "A trigger is a database operation that automatically executes when a specified event occurs.",
+      "explanation": "It can be activated by events such as INSERT, UPDATE, or DELETE."
+    },
+    {
+      "number": 49,
+      "topic": "Cursor",
+      "definition": "A cursor is a database mechanism used to process query results row by row.",
+      "explanation": "It is useful when individual rows need to be processed sequentially."
+    },
+    {
+      "number": 50,
+      "topic": "Referential Integrity",
+      "definition": "Referential integrity ensures that relationships between tables remain valid.",
+      "explanation": "A foreign-key value must refer to an existing valid record in the referenced table."
+    }
+  ]
+}

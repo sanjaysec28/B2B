@@ -1,0 +1,307 @@
+{
+  "subject": "DBMS",
+  "language": "Tanglish",
+  "format": "Definition and Explanation",
+  "topics": [
+    {
+      "number": 1,
+      "topic": "DBMS",
+      "definition": "DBMS na database-la irukkura data-va create, store, manage, retrieve panna use aagura software.",
+      "explanation": "Idhu users/applications-um database-um communicate panna oru interface-a work aagum."
+    },
+    {
+      "number": 2,
+      "topic": "Database",
+      "definition": "Database na related data-va organized-a store pannura collection.",
+      "explanation": "Data-va systematic-a store pannradhunaala easy-a access, manage panna mudiyum."
+    },
+    {
+      "number": 3,
+      "topic": "RDBMS",
+      "definition": "RDBMS na data-va tables form-la store pannura Database Management System.",
+      "explanation": "Tables keys use panni relationships moolama connect aagum."
+    },
+    {
+      "number": 4,
+      "topic": "Table",
+      "definition": "Table na data-va rows and columns-la organize panni store pannura structure.",
+      "explanation": "Rows records-a represent pannum; columns attributes-a represent pannum."
+    },
+    {
+      "number": 5,
+      "topic": "Tuple",
+      "definition": "Tuple na relational table-la irukkura oru single row.",
+      "explanation": "Oru entity-oda complete record-a tuple represent pannum."
+    },
+    {
+      "number": 6,
+      "topic": "Attribute",
+      "definition": "Attribute na oru entity-oda property or characteristic.",
+      "explanation": "Table-la attribute oru column-a represent aagum."
+    },
+    {
+      "number": 7,
+      "topic": "Primary Key",
+      "definition": "Primary Key na table-la each record-ai uniquely identify panna use aagura key.",
+      "explanation": "Idhula duplicate values-um NULL values-um irukka koodadhu."
+    },
+    {
+      "number": 8,
+      "topic": "Foreign Key",
+      "definition": "Foreign Key na innoru table-oda key-ai reference pannura attribute.",
+      "explanation": "Idhu mainly rendu tables-kku relationship establish panna use aagum."
+    },
+    {
+      "number": 9,
+      "topic": "Candidate Key",
+      "definition": "Candidate Key na oru record-ai uniquely identify panna mudiyura attribute or attributes set.",
+      "explanation": "Candidate keys-la oru key-ai Primary Key-a select pannuvanga."
+    },
+    {
+      "number": 10,
+      "topic": "Super Key",
+      "definition": "Super Key na oru record-ai uniquely identify panna mudiyura attributes set.",
+      "explanation": "Unique identification-ku thevai illadha extra attributes-um idhula irukkalaam."
+    },
+    {
+      "number": 11,
+      "topic": "Alternate Key",
+      "definition": "Alternate Key na Primary Key-a select pannappadaadha Candidate Key.",
+      "explanation": "Idhuvum records-ai uniquely identify panna mudiyum."
+    },
+    {
+      "number": 12,
+      "topic": "Composite Key",
+      "definition": "Composite Key na two or more attributes serndhu form aagura key.",
+      "explanation": "Multiple columns together use panni oru record-ai uniquely identify pannum."
+    },
+    {
+      "number": 13,
+      "topic": "Unique Key",
+      "definition": "Unique Key na oru column-la duplicate values varama ensure pannura constraint.",
+      "explanation": "Idhu table-la values unique-a irukka help pannum."
+    },
+    {
+      "number": 14,
+      "topic": "NULL Value",
+      "definition": "NULL na missing, unknown, illa available illaadha value-a represent pannum.",
+      "explanation": "NULL என்பது zero-um empty string-um illa; idhu different meaning கொண்டது."
+    },
+    {
+      "number": 15,
+      "topic": "Entity",
+      "definition": "Entity na real-world-la irukkura oru object; adhoda data database-la store pannuvom.",
+      "explanation": "Example: Student, Employee, Product, Department."
+    },
+    {
+      "number": 16,
+      "topic": "Entity Set",
+      "definition": "Entity Set na same type-oda multiple entities-oda collection.",
+      "explanation": "Example: College-la irukkura all students serndhu Student Entity Set."
+    },
+    {
+      "number": 17,
+      "topic": "ER Diagram",
+      "definition": "ER Diagram na entities, attributes, relationships-ai graphical-a represent pannura diagram.",
+      "explanation": "Database structure-ai design panna idhu use aagum."
+    },
+    {
+      "number": 18,
+      "topic": "Relationship",
+      "definition": "Relationship na two or more entities-kku between-la irukkura association.",
+      "explanation": "Example: Student oru Course-ai enroll pannirukkalaam."
+    },
+    {
+      "number": 19,
+      "topic": "Cardinality",
+      "definition": "Cardinality na oru relationship-la evlo entities participate panna mudiyum-nu define pannum.",
+      "explanation": "Common types 1:1, 1:N, and M:N."
+    },
+    {
+      "number": 20,
+      "topic": "Normalization",
+      "definition": "Normalization na data redundancy-ai reduce panna database data-va organize pannura process.",
+      "explanation": "Data-va related tables-a divide panni consistency improve pannum."
+    },
+    {
+      "number": 21,
+      "topic": "First Normal Form (1NF)",
+      "definition": "1NF na every attribute-um atomic or single value contain panna vendum.",
+      "explanation": "Oru cell-la multiple values illaama single value mattum irukkanum."
+    },
+    {
+      "number": 22,
+      "topic": "Second Normal Form (2NF)",
+      "definition": "2NF na table 1NF-la irukkanum and partial dependency irukka koodadhu.",
+      "explanation": "Every non-key attribute complete primary key-ai depend aaganum."
+    },
+    {
+      "number": 23,
+      "topic": "Third Normal Form (3NF)",
+      "definition": "3NF na table 2NF-la irukkanum and transitive dependency irukka koodadhu.",
+      "explanation": "Non-key attributes primary key-ai mattum depend aaganum."
+    },
+    {
+      "number": 24,
+      "topic": "BCNF",
+      "definition": "BCNF na 3NF-oda stronger version.",
+      "explanation": "Relation-la irukkura every determinant-um candidate key-a irukkanum."
+    },
+    {
+      "number": 25,
+      "topic": "Denormalization",
+      "definition": "Denormalization na database-la intentional-a redundancy add pannura process.",
+      "explanation": "Main-a query performance improve panna use pannuvanga."
+    },
+    {
+      "number": 26,
+      "topic": "SQL",
+      "definition": "SQL na Structured Query Language; relational database-oda communicate panna use pannuvom.",
+      "explanation": "Data create, retrieve, modify, manage panna SQL commands use pannuvom."
+    },
+    {
+      "number": 27,
+      "topic": "DDL",
+      "definition": "DDL na Data Definition Language.",
+      "explanation": "Database structure define/modify panna CREATE, ALTER, DROP madhiri commands use pannum."
+    },
+    {
+      "number": 28,
+      "topic": "DML",
+      "definition": "DML na Data Manipulation Language.",
+      "explanation": "Database data-va manipulate panna INSERT, UPDATE, DELETE madhiri commands use pannum."
+    },
+    {
+      "number": 29,
+      "topic": "DCL",
+      "definition": "DCL na Data Control Language.",
+      "explanation": "Database access permissions manage panna GRANT and REVOKE madhiri commands use pannum."
+    },
+    {
+      "number": 30,
+      "topic": "TCL",
+      "definition": "TCL na Transaction Control Language.",
+      "explanation": "Transactions manage panna COMMIT, ROLLBACK, SAVEPOINT madhiri commands use pannum."
+    },
+    {
+      "number": 31,
+      "topic": "SELECT",
+      "definition": "SELECT na database-la irundhu data retrieve panna use aagura SQL command.",
+      "explanation": "Specific columns or conditions based-a records retrieve panna use pannalaam."
+    },
+    {
+      "number": 32,
+      "topic": "JOIN",
+      "definition": "JOIN na multiple tables-la irukkura related data-va combine panna use aagura SQL operation.",
+      "explanation": "Related columns-ai base panni tables join pannuvom."
+    },
+    {
+      "number": 33,
+      "topic": "INNER JOIN",
+      "definition": "INNER JOIN na rendu tables-layum matching records-ai mattum return pannum.",
+      "explanation": "Match aagatha records result-la include aagathu."
+    },
+    {
+      "number": 34,
+      "topic": "LEFT JOIN",
+      "definition": "LEFT JOIN na left table-oda all records-um, right table-oda matching records-um return pannum.",
+      "explanation": "Right table-la match illa na NULL values varum."
+    },
+    {
+      "number": 35,
+      "topic": "RIGHT JOIN",
+      "definition": "RIGHT JOIN na right table-oda all records-um, left table-oda matching records-um return pannum.",
+      "explanation": "Left table-la match illa na NULL values varum."
+    },
+    {
+      "number": 36,
+      "topic": "FULL OUTER JOIN",
+      "definition": "FULL OUTER JOIN na rendu tables-oda matching and non-matching records-ai return pannum.",
+      "explanation": "Match illaadha side-la NULL values varum."
+    },
+    {
+      "number": 37,
+      "topic": "View",
+      "definition": "View na SQL query base panni create pannura virtual table.",
+      "explanation": "Underlying tables-la irukkura data-va query result form-la display pannum."
+    },
+    {
+      "number": 38,
+      "topic": "Index",
+      "definition": "Index na database-la data retrieval speed-ai improve panna use aagura structure.",
+      "explanation": "Search fast-a aagum; aana additional storage thevaipadum."
+    },
+    {
+      "number": 39,
+      "topic": "Transaction",
+      "definition": "Transaction na database operations-oda oru logical unit.",
+      "explanation": "Transaction successful-a complete aaganum; illana appropriate-a rollback pannalaam."
+    },
+    {
+      "number": 40,
+      "topic": "ACID Properties",
+      "definition": "ACID na Atomicity, Consistency, Isolation, Durability.",
+      "explanation": "Reliable and correct transaction processing-ai ensure panna indha four properties use aagum."
+    },
+    {
+      "number": 41,
+      "topic": "Atomicity",
+      "definition": "Atomicity na transaction complete-a execute aaganum illa complete-a execute aagama irukkanum.",
+      "explanation": "Oru operation fail aana entire transaction rollback panna mudiyum."
+    },
+    {
+      "number": 42,
+      "topic": "Consistency",
+      "definition": "Consistency na transaction database-ai oru valid state-lendhu another valid state-ku kondu poganum.",
+      "explanation": "Database constraints transaction-ku munnum pinnum satisfy aaganum."
+    },
+    {
+      "number": 43,
+      "topic": "Isolation",
+      "definition": "Isolation na concurrent transactions one another-ai improper-a affect pannama irukkum property.",
+      "explanation": "Oru transaction-oda intermediate changes-ai matra transactions direct-a affect panna mudiyadhu."
+    },
+    {
+      "number": 44,
+      "topic": "Durability",
+      "definition": "Durability na committed transaction changes permanent-a store aagum property.",
+      "explanation": "System failure vandhaalum committed changes retain aagum."
+    },
+    {
+      "number": 45,
+      "topic": "Concurrency Control",
+      "definition": "Concurrency Control na multiple transactions same time-la execute aagumbodhu manage pannura process.",
+      "explanation": "Conflicts prevent panni database consistency maintain pannum."
+    },
+    {
+      "number": 46,
+      "topic": "Deadlock",
+      "definition": "Deadlock na transactions one another hold pannura resources-kaga indefinitely wait pannura situation.",
+      "explanation": "Deadlock vandha transactions continue aaga mudiyama stuck aagum."
+    },
+    {
+      "number": 47,
+      "topic": "Stored Procedure",
+      "definition": "Stored Procedure na database-la store pannirukkura precompiled SQL statements-oda collection.",
+      "explanation": "Specific operation-ai repeated-a execute panna use pannalaam."
+    },
+    {
+      "number": 48,
+      "topic": "Trigger",
+      "definition": "Trigger na specific database event nadakkumbodhu automatically execute aagura database operation.",
+      "explanation": "INSERT, UPDATE, DELETE madhiri events-ku trigger activate aagalaam."
+    },
+    {
+      "number": 49,
+      "topic": "Cursor",
+      "definition": "Cursor na query result-la rows-ai one by one process panna use aagura database mechanism.",
+      "explanation": "Individual rows sequential-a process panna useful-a irukkum."
+    },
+    {
+      "number": 50,
+      "topic": "Referential Integrity",
+      "definition": "Referential Integrity na tables-kku between irukkura relationships valid-a maintain pannura rule.",
+      "explanation": "Foreign Key value referenced table-la valid existing record-ai reference panna vendum."
+    }
+  ]
+}
