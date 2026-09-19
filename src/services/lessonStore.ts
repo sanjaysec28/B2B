@@ -69,6 +69,12 @@ export function useLessonStore(): UseLessonStoreReturn {
     setFinalizedTranscript(trimmed);
     setCurrentSentence(trimmed);
     setInterimTranscript('');
+    setVocabulary([]);
+    setSelectedWordId(null);
+    setTamilMeaning('');
+    setTanglishMeaning('');
+    setPreservedKeywords([]);
+    setGlossaryMatches([]);
     if (newTopic) {
       setTopic(newTopic);
     }
@@ -86,14 +92,15 @@ export function useLessonStore(): UseLessonStoreReturn {
       setGlossaryMatches(analysis.glossaryMatches);
     }
 
-    // Merge vocabulary without duplicates (matching lowercase word)
+    // Set vocabulary from the analyzed sentence
     if (Array.isArray(analysis.importantWords) && analysis.importantWords.length > 0) {
       setVocabulary((prev) => {
+        if (prev.length === 0) return analysis.importantWords;
         const existingWordsLower = new Set(prev.map((w) => w.word.toLowerCase()));
         const newWords = analysis.importantWords.filter(
           (w) => !existingWordsLower.has(w.word.toLowerCase())
         );
-        return [...prev, ...newWords];
+        return [...newWords, ...prev];
       });
 
       // Auto-select the first newly analyzed word or glossary term

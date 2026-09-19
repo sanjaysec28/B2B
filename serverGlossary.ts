@@ -263,17 +263,38 @@ class GlossaryManager {
           }
         }
       } catch (embErr) {
-        console.warn(`[GlossaryManager] Failed to embed keyword "${kw}":`, embErr);
+        // Fallback to gemini-embedding-2-preview if needed
+        try {
+          const fallbackEmbed = await ai.models.embedContent({
+            model: 'gemini-embedding-2-preview',
+            contents: kw,
+          });
+          const kwVec = fallbackEmbed.embeddings?.[0]?.values;
+          if (kwVec && kwVec.length > 0) {
+            for (const item of this.items) {
+              if (item.embedding && item.embedding.length > 0) {
+                const sim = this.cosineSimilarity(kwVec, item.embedding);
+                if (sim > highestSimilarity) {
+                  highestSimilarity = sim;
+                  bestItem = item;
+                }
+              }
+            }
+          }
+        } catch {
+          // Keep best heuristic match if embeddings are temporarily unavailable
+        }
       }
 
       // If direct match was found, ensure it gets priority
       const targetItem = directItem || (highestSimilarity >= 0.55 ? bestItem : null);
       if (targetItem && !glossaryMatches.some((g) => g.topicNumber === targetItem.number)) {
+        const score = directItem ? Math.max(highestSimilarity, 0.85) : highestSimilarity;
         glossaryMatches.push({
           topicNumber: targetItem.number,
           topic: targetItem.topic,
           matchedKeyword: kw,
-          similarityScore: Math.round((highestSimilarity || 0.95) * 100) / 100,
+          similarityScore: Math.round(score * 100) / 100,
           englishDefinition: targetItem.englishDefinition,
           englishExplanation: targetItem.englishExplanation,
           tamilDefinition: targetItem.tamilDefinition,
@@ -282,37 +303,97 @@ class GlossaryManager {
       }
     }
 
-    // Step 4: Lock/Preserve keywords and translate the rest of the sentence into Tamil using Gemini
+const COMMON_DBMS_TAMIL_TERMS: Record<string, string> = {
+  'foreign key': 'வெளிப்புற விசை',
+  'primary key': 'முதன்மை சாவி',
+  'candidate key': 'வேட்பாளர் சாவி',
+  'super key': 'சிறப்பு சாவி',
+  'composite key': 'கூட்டுச் சாவி',
+  'alternate key': 'மாற்றுச் சாவி',
+  'table': 'அட்டவணை',
+  'database': 'தரவுத்தளம்',
+  'rdbms': 'உறவுநிலை தரவுத்தள மேலாண்மை அமைப்பு',
+  'dbms': 'தரவுத்தள மேலாண்மை அமைப்பு',
+  'row': 'வரிசை',
+  'rows': 'வரிசைகள்',
+  'column': 'நெடுவரிசை',
+  'columns': 'நெடுவரிசைகள்',
+  'record': 'பதிவு',
+  'records': 'பதிவுகள்',
+  'attribute': 'பண்புக்கூறு',
+  'attributes': 'பண்புக்கூறுகள்',
+  'tuple': 'வரிசை / பதிவு',
+  'relation': 'தொடர்பு / அட்டவணை',
+  'query': 'வினவல்',
+  'sql': 'கட்டமைக்கப்பட்ட வினவல் மொழி',
+  'schema': 'கட்டமைப்பு / திட்டம்',
+  'index': 'குறியீடு',
+  'view': 'காட்சி',
+  'normalization': 'இயல்பாக்கம்',
+  'transaction': 'பரிவர்த்தனை',
+  'acid': 'ACID பண்புகள்',
+  'atomicity': 'முழுமைத்தன்மை',
+  'consistency': 'நிலையான தன்மை',
+  'isolation': 'தனிமைப்படுத்தல்',
+  'durability': 'நீடித்து நிலைக்கும் தன்மை',
+  'join': 'இணைப்பு',
+  'constraint': 'கட்டுப்பாடு',
+  'constraints': 'கட்டுப்பாடுகள்',
+  'trigger': 'தூண்டுதல்',
+  'deadlock': 'முட்டுக்கட்டை',
+  'concurrency': 'ஒரே நேரத்தில் நிகழ்தல்',
+  'connects': 'இணைக்கிறது / தொடர்புபடுத்துகிறது',
+  'key': 'சாவி / விசை',
+  'keys': 'சாவிகள்',
+};
+
+    // Step 4: Generate a clear natural Tamil explanation and keyword meanings using Gemini
     const protectedKeywordsList = glossaryMatches.length > 0
       ? glossaryMatches.map((g) => g.matchedKeyword)
       : matchedKeywords;
 
-    const prompt = `You are a bilingual academic instructor for Tamil-medium students studying Computer Science and DBMS (Database Management Systems).
+    const prompt = `You are an expert bilingual teacher explaining classroom lectures naturally to Tamil-medium college students hearing the concept for the first time.
 Teacher's spoken sentence: "${cleanSentence}"
 
-PROTECTED KEYWORDS TO LOCK: ${JSON.stringify(protectedKeywordsList)}
+CRITICAL INSTRUCTION FOR TAMIL EXPLANATION:
+Do NOT give a direct or word-by-word translation of the English sentence.
+Do NOT give a textbook-style formal definition (e.g. avoid "...என்பது ...ஐ குறைக்கும் முறையாகும்").
+Instead, explain the meaning of the ACTUAL spoken sentence naturally in simple spoken Tamil, as if an engaging teacher is explaining the concept to a Tamil-medium student.
 
-MANDATORY RULES:
-1. LOCK & PRESERVE KEYWORDS: You must protect the keywords ${JSON.stringify(protectedKeywordsList)}. DO NOT translate these keywords into Tamil script. Keep them as exact English keywords in the translated sentence.
-2. TRANSLATE REST TO TAMIL: Translate all remaining words of the sentence into natural, grammatically correct Tamil.
-3. Replace the protected keywords in their correct grammatical positions as English words (e.g. if the sentence is "every primary key is a candidate key", translate to "ஒவ்வொரு primary key-உம் ஒரு candidate key ஆகும்." keeping "primary key" and "candidate key" in English).
-4. Provide a conversational Tanglish translation as well.
-5. Provide 2 to 4 vocabulary items with simple Tamil meanings and real-world examples.
+EXPLANATION STYLE GUIDELINES:
+1. Start naturally, such as "இந்த sentence-ல சொல்ல வருவது என்னனா..." or "இங்க ஆசிரியர் என்ன சொல்றாங்கன்னா..." when appropriate.
+2. Explain what the sentence actually means in real terms using simple, conversational spoken Tamil.
+3. Preserve important technical English terms (e.g. Normalization, database, foreign key, primary key, table, data redundancy) as English words, because they are commonly used in Tamil classrooms and exams.
+4. Avoid overly formal literary Tamil and avoid robotic word-by-word translations.
+5. Make it immediately crystal clear to a Tamil-medium student listening to this lecture.
+
+CONCRETE EXAMPLES:
+- Teacher: "Normalization reduces unnecessary data redundancy."
+  tamilExplanation: "இந்த sentence-ல சொல்ல வருவது என்னனா, database-ல ஒரே தகவல் தேவையில்லாமல் பல முறை சேமிக்கப்படுவதை Normalization குறைக்கிறது."
+
+- Teacher: "A foreign key connects one table with another table."
+  tamilExplanation: "இந்த sentence-ல ஆசிரியர் என்ன சொல்றாருன்னா, ஒரு table-ஐ இன்னொரு table-கூட link பண்ணி relationship உருவாக்க Foreign key பயன்படுது."
+
+- Teacher: "Every primary key is a candidate key."
+  tamilExplanation: "இந்த sentence-ல சொல்ல வருவது என்னனா, table-ல தனித்துவமா identify பண்ண தகுதியுள்ள candidate keys-ல இருந்துதான் ஒரு முக்கியமான primary key-ஐ தேர்ந்தெடுக்கிறோம், அதனால எல்லா primary key-உம் அடிப்படையில் ஒரு candidate key தான்."
+
+IMPORTANT WORDS:
+Extract the 2 to 5 important technical English keywords from the sentence with their direct Tamil meaning (e.g. foreign key → வெளிப்புற விசை, table → அட்டவணை, primary key → முதன்மை சாவி, candidate key → வேட்பாளர் சாவி).
 
 Respond ONLY with valid JSON matching this schema:
 {
-  "topic": "DBMS • Database Management System",
-  "lockedTamilTranslation": "string",
-  "tanglishTranslation": "string",
+  "topic": "string (e.g. DBMS • Relational Model)",
+  "tamilExplanation": "string (Natural teacher explanation in spoken Tamil starting with 'இந்த sentence-ல சொல்ல வருவது என்னனா...' or similar)",
+  "tanglishMeaning": "string",
   "preservedKeywords": ${JSON.stringify(protectedKeywordsList)},
   "importantWords": [
     {
-      "word": "string",
-      "tamilMeaning": "string",
+      "word": "string (English keyword from speech, e.g. 'foreign key')",
+      "tamilMeaning": "string (Direct Tamil meaning/translation, e.g. 'வெளிப்புற விசை')",
       "tanglish": "string",
       "partOfSpeech": "string",
-      "explanation": "string",
-      "tamilExplanation": "string",
+      "explanation": "string (Simple 1-sentence English explanation)",
+      "tamilExplanation": "string (Simple 1-sentence Tamil explanation)",
       "example": "string",
       "tamilExample": "string"
     }
@@ -320,7 +401,13 @@ Respond ONLY with valid JSON matching this schema:
 }`;
 
     let translationData: any = {};
-    const candidateModels = ['gemini-3.6-flash', 'gemini-3.8-flash'];
+    const candidateModels = [
+      'gemini-flash-latest',
+      'gemini-3.1-flash-lite',
+      'gemini-3.6-flash',
+      'gemini-3.8-flash',
+    ];
+
     for (const modelName of candidateModels) {
       try {
         const response = await ai.models.generateContent({
@@ -334,71 +421,116 @@ Respond ONLY with valid JSON matching this schema:
         const raw = response.text || '{}';
         const cleaned = raw.replace(/^\s*```json/i, '').replace(/```\s*$/i, '').trim();
         translationData = JSON.parse(cleaned);
-        if (translationData.lockedTamilTranslation) {
+        if (translationData.tamilExplanation) {
           break;
         }
       } catch (err: any) {
-        console.warn(`[GlossaryManager] Error with model ${modelName}:`, err?.message || err);
+        // If a model is unavailable (503) or rate-limited (429), try next model gracefully
+        const isTemporary = err?.message?.includes('503') || err?.message?.includes('429');
+        if (isTemporary) {
+          console.log(`[GlossaryManager] Model ${modelName} temporarily busy, falling back to next candidate.`);
+        } else {
+          console.warn(`[GlossaryManager] Error with model ${modelName}:`, err?.message || err);
+        }
       }
     }
 
-    if (!translationData.lockedTamilTranslation) {
-      // Fallback rule-based translation preserving keywords
+    if (!translationData.tamilExplanation) {
+      // Fallback rule-based translation preserving natural spoken explanation
       let fallbackTamil = cleanSentence;
-      // Simple known phrase replacements for DBMS
-      if (cleanSentence.toLowerCase().includes('every') && cleanSentence.toLowerCase().includes('is a')) {
-        fallbackTamil = `ஒவ்வொரு ${protectedKeywordsList[0] || 'primary key'}-உம் ஒரு ${protectedKeywordsList[1] || 'candidate key'} ஆகும்.`;
+      const lower = cleanSentence.toLowerCase();
+      if (lower.includes('foreign key') && lower.includes('table')) {
+        fallbackTamil = 'இந்த sentence-ல ஆசிரியர் என்ன சொல்றாருன்னா, ஒரு table-ஐ இன்னொரு table-கூட link பண்ணி relationship உருவாக்க Foreign key பயன்படுது.';
+      } else if (lower.includes('primary key') && lower.includes('candidate key')) {
+        fallbackTamil = 'இந்த sentence-ல சொல்ல வருவது என்னனா, table-ல தனித்துவமா identify பண்ண தகுதியுள்ள candidate keys-ல இருந்துதான் ஒரு முக்கியமான primary key-ஐ தேர்ந்தெடுக்கிறோம், அதனால எல்லா primary key-உம் அடிப்படையில் ஒரு candidate key தான்.';
+      } else if (lower.includes('normalization') && (lower.includes('redundancy') || lower.includes('reduces'))) {
+        fallbackTamil = 'இந்த sentence-ல சொல்ல வருவது என்னனா, database-ல ஒரே தகவல் தேவையில்லாமல் பல முறை சேமிக்கப்படுவதை Normalization குறைக்கிறது.';
+      } else if (lower.includes('acid')) {
+        fallbackTamil = 'இந்த sentence-ல ஆசிரியர் என்ன சொல்றாருன்னா, டேட்டாபேஸ் பரிவர்த்தனைகள் நம்பகத்தன்மையோட எந்த பிழையும் இல்லாம நடக்க ACID பண்புகளை கட்டாயம் பின்பற்ற வேண்டும்.';
       } else {
-        fallbackTamil = `${protectedKeywordsList.join(' மற்றும் ')} பற்றிய விளக்கம் (ஆங்கில சொற்கள் பாதுகாக்கப்பட்டுள்ளன).`;
+        fallbackTamil = `இந்த sentence-ல சொல்ல வருவது என்னனா, ${cleanSentence} என்பது ${protectedKeywordsList.join(', ')} தொடர்பான முக்கியமான கருத்து ஆகும்.`;
       }
 
       translationData = {
         topic: 'DBMS • Database Management System',
-        lockedTamilTranslation: fallbackTamil,
-        tanglishTranslation: cleanSentence,
+        tamilExplanation: fallbackTamil,
+        tanglishMeaning: cleanSentence,
         preservedKeywords: protectedKeywordsList,
-        importantWords: [],
+        importantWords: protectedKeywordsList.map((kw) => ({
+          word: kw,
+          tamilMeaning: COMMON_DBMS_TAMIL_TERMS[kw.toLowerCase()] || kw,
+          tanglish: kw,
+          partOfSpeech: 'database term',
+          explanation: `Important database concept: ${kw}`,
+          tamilExplanation: `${kw} என்பது முக்கியமான டேட்டாபேஸ் கருத்து ஆகும்.`,
+          example: `In databases, ${kw} plays an essential role.`,
+          tamilExample: `டேட்டாபேஸில் ${kw} முக்கிய பங்கு வகிக்கிறது.`,
+        })),
       };
     }
 
-    // Merge vocabulary with matched glossary items
-    const mergedWords = [...(translationData.importantWords || [])];
+    // Process important words and ensure genuine Tamil meanings
+    const rawWords = translationData.importantWords || [];
+    const mergedWords = rawWords.map((w: any) => {
+      const lowerWord = (w.word || '').toLowerCase();
+      let bestTamilMeaning = w.tamilMeaning;
+      if (COMMON_DBMS_TAMIL_TERMS[lowerWord]) {
+        bestTamilMeaning = COMMON_DBMS_TAMIL_TERMS[lowerWord];
+      }
+
+      // Check if this keyword matches any glossary topic
+      const matchedGlossary = glossaryMatches.find(
+        (g) => g.matchedKeyword.toLowerCase() === lowerWord || g.topic.toLowerCase() === lowerWord
+      );
+
+      return {
+        ...w,
+        tamilMeaning: bestTamilMeaning,
+        glossaryTopic: matchedGlossary?.topic,
+        topicNumber: matchedGlossary?.topicNumber,
+        similarityScore: matchedGlossary?.similarityScore,
+        englishDefinition: matchedGlossary?.englishDefinition,
+        englishExplanation: matchedGlossary?.englishExplanation,
+        tamilDefinition: matchedGlossary?.tamilDefinition,
+        tamilExplanation: w.tamilExplanation || matchedGlossary?.tamilExplanation,
+      };
+    });
+
+    // Ensure any matched glossary items not yet in mergedWords are added
     for (const match of glossaryMatches) {
-      const existingIdx = mergedWords.findIndex(
+      const exists = mergedWords.some(
         (w: any) => w.word.toLowerCase() === match.matchedKeyword.toLowerCase() ||
                     w.word.toLowerCase() === match.topic.toLowerCase()
       );
 
-      const wordPayload = {
-        id: `glossary-${match.topicNumber}`,
-        word: match.matchedKeyword || match.topic,
-        glossaryTopic: match.topic,
-        similarityScore: match.similarityScore,
-        tamilMeaning: match.tamilDefinition.split(/[-–—]/)[0]?.trim() || match.topic,
-        tanglish: `${match.matchedKeyword} (${match.topic})`,
-        partOfSpeech: 'database term',
-        explanation: `${match.englishDefinition} ${match.englishExplanation}`,
-        tamilExplanation: `${match.tamilDefinition} ${match.tamilExplanation}`,
-        example: `In SQL databases, every table should have a well-defined ${match.topic}.`,
-        tamilExample: `SQL டேட்டாபேஸில் ஒவ்வொரு டேபிளுக்கும் முறையான ${match.topic} அமைப்பது அவசியமாகும்.`,
-      };
+      if (!exists) {
+        const lowerKeyword = match.matchedKeyword.toLowerCase();
+        const tamilTerm = COMMON_DBMS_TAMIL_TERMS[lowerKeyword] ||
+                          COMMON_DBMS_TAMIL_TERMS[match.topic.toLowerCase()] ||
+                          match.topic;
 
-      if (existingIdx >= 0) {
-        mergedWords[existingIdx] = {
-          ...mergedWords[existingIdx],
-          ...wordPayload,
-          id: mergedWords[existingIdx].id || wordPayload.id,
-        };
-      } else {
-        mergedWords.unshift(wordPayload);
+        mergedWords.push({
+          id: `glossary-${match.topicNumber}`,
+          word: match.matchedKeyword,
+          glossaryTopic: match.topic,
+          topicNumber: match.topicNumber,
+          similarityScore: match.similarityScore,
+          tamilMeaning: tamilTerm,
+          tanglish: `${match.matchedKeyword} (${match.topic})`,
+          partOfSpeech: 'database term',
+          explanation: `${match.englishDefinition} ${match.englishExplanation}`,
+          tamilExplanation: `${match.tamilDefinition} ${match.tamilExplanation}`,
+          example: `In SQL databases, every table should have a well-defined ${match.topic}.`,
+          tamilExample: `SQL டேட்டாபேஸில் ஒவ்வொரு டேபிளுக்கும் முறையான ${match.topic} அமைப்பது அவசியமாகும்.`,
+        });
       }
     }
 
     return {
       topic: translationData.topic || 'DBMS • Database Management System',
       englishSentence: cleanSentence,
-      tamilMeaning: translationData.lockedTamilTranslation || '',
-      tanglishMeaning: translationData.tanglishTranslation || '',
+      tamilMeaning: translationData.tamilExplanation || translationData.lockedTamilTranslation || '',
+      tanglishMeaning: translationData.tanglishMeaning || translationData.tanglishTranslation || '',
       preservedKeywords: protectedKeywordsList,
       importantWords: mergedWords.map((w: any, idx: number) => ({
         ...w,

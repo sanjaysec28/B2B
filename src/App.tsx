@@ -107,40 +107,43 @@ export default function App() {
     }, 1000);
 
     try {
-      await speechToTextService.start({
-        onReady: () => {
-          setState('recording');
-        },
-        onInterimTranscript: (interim: string) => {
-          console.log('interim transcript received:', interim);
-          // Show live interim words in Center card without saving to finalized
-          updateInterim(interim);
-        },
-        onFinalTranscript: (finalSegment: string) => {
-          console.log('final transcript received:', finalSegment);
-          // Append finalized sentence to transcript
-          appendFinalized(finalSegment);
+      await speechToTextService.start(
+        {
+          onReady: () => {
+            setState('recording');
+          },
+          onInterimTranscript: (interim: string) => {
+            console.log('interim transcript received:', interim);
+            // Show live interim words in Center card without saving to finalized
+            updateInterim(interim);
+          },
+          onFinalTranscript: (finalSegment: string) => {
+            console.log('final transcript received:', finalSegment);
+            // Append finalized sentence to transcript
+            appendFinalized(finalSegment);
 
-          // Trigger Gemini analysis for 2-5 important words, Tamil meaning, & examples
-          triggerSentenceAnalysis(finalSegment);
+            // Trigger Gemini analysis for 2-5 important words, Tamil meaning, & examples
+            triggerSentenceAnalysis(finalSegment);
+          },
+          onAudioLevel: (level: number) => {
+            setAudioLevel(level);
+          },
+          onError: (err: Error) => {
+            console.error('Gemini errors:', err);
+            stopAudioPipeline();
+            setState('error');
+            setErrorMessage(
+              err.message || 'Unable to connect to Gemini Live transcription. Please try again.'
+            );
+          },
+          onClose: () => {
+            if (state === 'recording') {
+              handleStopRecording();
+            }
+          },
         },
-        onAudioLevel: (level: number) => {
-          setAudioLevel(level);
-        },
-        onError: (err: Error) => {
-          console.error('Gemini errors:', err);
-          stopAudioPipeline();
-          setState('error');
-          setErrorMessage(
-            err.message || 'Unable to connect to Gemini Live transcription. Please try again.'
-          );
-        },
-        onClose: () => {
-          if (state === 'recording') {
-            handleStopRecording();
-          }
-        },
-      });
+        { topic }
+      );
     } catch (err: unknown) {
       stopAudioPipeline();
       setState('error');

@@ -7,7 +7,7 @@ import express from 'express';
 import http from 'http';
 import path from 'path';
 import { WebSocketServer, WebSocket } from 'ws';
-import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
+import { GoogleGenAI, LiveServerMessage, Modality, AudioTranscriptionConfigMode } from '@google/genai';
 import dotenv from 'dotenv';
 import { createServer as createViteServer } from 'vite';
 import { SAMPLE_LESSONS } from './src/services/sampleLessons.ts';
@@ -120,7 +120,7 @@ server.on('upgrade', (request, socket, head) => {
   }
 });
 
-wss.on('connection', async (clientWs: WebSocket) => {
+wss.on('connection', async (clientWs: WebSocket, request: http.IncomingMessage) => {
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
@@ -133,6 +133,98 @@ wss.on('connection', async (clientWs: WebSocket) => {
     clientWs.close();
     return;
   }
+
+  // Parse query parameters for active lesson topic or custom vocabulary hints
+  const reqUrl = new URL(request?.url || '', `http://${request?.headers.host || 'localhost'}`);
+  const activeTopic = reqUrl.searchParams.get('topic') || '';
+
+  // Build dynamic classroom vocabulary based on DBMS glossary topics and active topic
+  const vocabSet = new Set<string>();
+
+  // High-priority core technical terms from DBMS curriculum
+  const coreDbmsTerms = [
+    'Normalization',
+    'database',
+    'data redundancy',
+    'unnecessary data redundancy',
+    'redundancy',
+    'table',
+    'tables',
+    'relation',
+    'relations',
+    'relational database',
+    'foreign key',
+    'primary key',
+    'candidate key',
+    'super key',
+    'composite key',
+    'alternate key',
+    'tuple',
+    'tuples',
+    'attribute',
+    'attributes',
+    'schema',
+    'SQL',
+    'DDL',
+    'DML',
+    'DCL',
+    'TCL',
+    'ACID properties',
+    'atomicity',
+    'consistency',
+    'isolation',
+    'durability',
+    'transaction',
+    'query',
+    'index',
+    'indexing',
+    'view',
+    'join',
+    'inner join',
+    'outer join',
+    'left join',
+    'right join',
+    '1NF',
+    '2NF',
+    '3NF',
+    'BCNF',
+    'functional dependency',
+    'cardinality',
+    'degree',
+    'ER diagram',
+    'entity',
+    'DBMS',
+    'RDBMS',
+  ];
+
+  for (const term of coreDbmsTerms) {
+    vocabSet.add(term);
+  }
+
+  // Also include topics from loaded glossary manager items
+  try {
+    const glossaryTopics = glossaryManager.getTopics();
+    for (const item of glossaryTopics) {
+      if (item.topic) {
+        const clean = item.topic.replace(/\s*\([^)]*\)/g, '').trim();
+        if (clean) vocabSet.add(clean);
+      }
+    }
+  } catch (err) {
+    console.warn('[Gemini Live] Could not extract glossary topics for vocabulary:', err);
+  }
+
+  // Add words from active topic if provided
+  if (activeTopic) {
+    vocabSet.add(activeTopic);
+    const words = activeTopic.split(/[\s•\-_/]+/).map((w) => w.trim()).filter((w) => w.length > 2);
+    for (const w of words) {
+      vocabSet.add(w);
+    }
+  }
+
+  const customVocabulary = Array.from(vocabSet).slice(0, 100);
+  console.log(`[Gemini Live] Initializing speech session with ${customVocabulary.length} vocabulary hints. Active topic: "${activeTopic || 'Default'}"`);
 
   let liveSession: Awaited<ReturnType<InstanceType<typeof GoogleGenAI>['live']['connect']>> | null =
     null;
@@ -150,12 +242,15 @@ wss.on('connection', async (clientWs: WebSocket) => {
     });
 
     // Connect to Gemini Live Transcription API with gemini-3.5-transcribe-live
+    // Rigorously configured for English classroom speech recognition
     liveSession = await ai.live.connect({
       model: 'gemini-3.5-transcribe-live',
       config: {
         responseModalities: [Modality.TEXT],
         inputAudioTranscription: {
-          languageCodes: [],
+          languageCodes: ['en-US'],
+          mode: AudioTranscriptionConfigMode.SMART,
+          customVocabulary,
         },
       },
       callbacks: {

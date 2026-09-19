@@ -150,6 +150,7 @@ export const SpeechWorkspace: React.FC<SpeechWorkspaceProps> = ({
             <TamilMeaningPanel
               tamilMeaning={tamilMeaning}
               tanglishMeaning={tanglishMeaning}
+              vocabulary={vocabulary}
               selectedWord={selectedWord}
               preservedKeywords={preservedKeywords}
               glossaryMatches={glossaryMatches}

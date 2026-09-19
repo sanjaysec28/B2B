@@ -29,14 +29,19 @@ interface LiveLessonSentenceProps {
 
 const SAMPLE_PROMPTS = [
   {
+    label: 'Normalization',
+    topic: 'DBMS • Normalization',
+    sentence: 'Normalization reduces unnecessary data redundancy in a database.',
+  },
+  {
+    label: 'Foreign Key & Table',
+    topic: 'DBMS • Relational Model',
+    sentence: 'A foreign key connects one table with another table.',
+  },
+  {
     label: 'Primary & Candidate Key',
     topic: 'DBMS • Keys & Constraints',
     sentence: 'Every primary key is a candidate key.',
-  },
-  {
-    label: 'Foreign Key & RDBMS',
-    topic: 'DBMS • Relational Model',
-    sentence: 'A foreign key connects tables in an RDBMS.',
   },
   {
     label: 'ACID Properties',

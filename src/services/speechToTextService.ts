@@ -86,7 +86,10 @@ export class GeminiLiveTranscriptionService {
    * Starts microphone stream, opens WebSocket connection to server Gemini Live bridge,
    * converts audio to 16-bit 16kHz mono PCM, and streams continuously in real time.
    */
-  async start(callbacks: LiveTranscriptionCallbacks = {}): Promise<void> {
+  async start(
+    callbacks: LiveTranscriptionCallbacks = {},
+    options: { topic?: string } = {}
+  ): Promise<void> {
     if (this.isConnected || this.isConnecting) {
       return;
     }
@@ -110,9 +113,11 @@ export class GeminiLiveTranscriptionService {
       });
       this.mediaStream = stream;
 
-      // 2. Open WebSocket connection to server Gemini Live bridge
+      // 2. Open WebSocket connection to server Gemini Live bridge with active topic query
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/api/live-transcribe`;
+      const query = options.topic ? `?topic=${encodeURIComponent(options.topic)}` : '';
+      const wsUrl = `${protocol}//${window.location.host}/api/live-transcribe${query}`;
+      console.log(`[GeminiLiveTranscription] Connecting to ${wsUrl} (Topic: "${options.topic || 'Classroom'}")`);
       const ws = new WebSocket(wsUrl);
       this.ws = ws;
 
@@ -125,13 +130,14 @@ export class GeminiLiveTranscriptionService {
           window.clearTimeout(timeout);
           this.isConnected = true;
           this.isConnecting = false;
+          console.log('[GeminiLiveTranscription] WebSocket bridge opened successfully. Waiting for Gemini session ready...');
           resolve();
         };
 
         ws.onerror = (err) => {
           window.clearTimeout(timeout);
           this.isConnecting = false;
-          console.error('Gemini errors:', err);
+          console.error('[GeminiLiveTranscription] WebSocket error:', err);
           reject(new Error('Failed to connect to real-time transcription service.'));
         };
 
@@ -139,7 +145,7 @@ export class GeminiLiveTranscriptionService {
           try {
             const data = JSON.parse(event.data);
             if (data.type === 'ready') {
-              console.log('Gemini connected');
+              console.log('[GeminiLiveTranscription] Gemini Live session connected & ready for 16kHz PCM audio');
               this.callbacks.onReady?.();
             } else if (data.type === 'interim') {
               if (data.text) {
@@ -156,6 +162,7 @@ export class GeminiLiveTranscriptionService {
               const err = new Error(data.message || 'Gemini Live transcription error');
               this.callbacks.onError?.(err);
             } else if (data.type === 'closed') {
+              console.log('[GeminiLiveTranscription] Session closed by server');
               this.callbacks.onClose?.();
             }
           } catch (e) {
@@ -167,6 +174,7 @@ export class GeminiLiveTranscriptionService {
           window.clearTimeout(timeout);
           this.isConnected = false;
           this.isConnecting = false;
+          console.log('[GeminiLiveTranscription] WebSocket connection closed');
           this.callbacks.onClose?.();
         };
       });
@@ -180,15 +188,18 @@ export class GeminiLiveTranscriptionService {
         await audioContext.resume();
       }
 
-      console.log('microphone started');
+      console.log(`[GeminiLiveTranscription] Microphone started. Hardware sample rate: ${audioContext.sampleRate}Hz -> Resampling target: 16000Hz (mono, 16-bit little-endian PCM)`);
 
       const sourceNode = audioContext.createMediaStreamSource(stream);
       this.sourceNode = sourceNode;
 
-      // 4096 samples buffer size (~92ms buffer at 44.1kHz, ~85ms at 48kHz)
-      const bufferSize = 4096;
+      // 2048 samples buffer size (~42ms buffer at 48kHz, ~46ms at 44.1kHz) for low-latency continuous audio streaming
+      const bufferSize = 2048;
       const processorNode = audioContext.createScriptProcessor(bufferSize, 1, 1);
       this.processorNode = processorNode;
+
+      let chunkCount = 0;
+      let totalAudioBytes = 0;
 
       processorNode.onaudioprocess = (audioProcessingEvent) => {
         if (!this.isConnected || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
@@ -216,7 +227,12 @@ export class GeminiLiveTranscriptionService {
 
         // Convert to RAW 16-bit Little-Endian PCM
         const pcm16Buffer = floatTo16BitPCM(downsampled16k);
-        console.log('PCM chunk size:', pcm16Buffer.byteLength, 'nonZero:', hasNonZero);
+        chunkCount++;
+        totalAudioBytes += pcm16Buffer.byteLength;
+
+        if (chunkCount % 25 === 0) {
+          console.log(`[Audio Diagnostics] Chunks sent: ${chunkCount}, chunk size: ${pcm16Buffer.byteLength}B, total bytes: ${totalAudioBytes}B, sampleRate: ${audioContext.sampleRate}Hz -> 16000Hz, nonZero: ${hasNonZero}`);
+        }
 
         // Send base64-encoded PCM chunk over WebSocket to server
         const base64Audio = arrayBufferToBase64(pcm16Buffer);
@@ -226,7 +242,6 @@ export class GeminiLiveTranscriptionService {
             data: base64Audio,
           })
         );
-        console.log('audio chunk sent');
       };
 
       // Mute node prevents microphone from echoing into speakers while keeping audio graph active
