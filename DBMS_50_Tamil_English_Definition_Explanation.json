@@ -1,0 +1,308 @@
+{
+  "subject": "DBMS",
+  "language": "Tamil + English",
+  "format": "Definition and Explanation",
+  "style": "Main technical terms in English; connecting/explanatory words in Tamil script",
+  "topics": [
+    {
+      "number": 1,
+      "topic": "DBMS",
+      "definition": "DBMS-ன்னா database-ல் இருக்கும் data-வை create, store, manage, retrieve பண்ண use ஆகுற software.",
+      "explanation": "இது users/applications-க்கும் database-க்கும் நடுவில் interface-ஆ work ஆகும்."
+    },
+    {
+      "number": 2,
+      "topic": "Database",
+      "definition": "Database-ன்னா related data-வை organized-ஆ store பண்ணுற collection.",
+      "explanation": "Data-வை systematic-ஆ store பண்ணுறதுனால easy-ஆ access மற்றும் manage பண்ண முடியும்."
+    },
+    {
+      "number": 3,
+      "topic": "RDBMS",
+      "definition": "RDBMS-ன்னா data-வை tables form-ல store பண்ணுற Database Management System.",
+      "explanation": "Tables-ஐ keys use பண்ணி relationships மூலமா connect பண்ணலாம்."
+    },
+    {
+      "number": 4,
+      "topic": "Table",
+      "definition": "Table-ன்னா data-வை rows and columns-ல organize பண்ணி store பண்ணுற structure.",
+      "explanation": "Rows records-ஐ represent பண்ணும்; columns attributes-ஐ represent பண்ணும்."
+    },
+    {
+      "number": 5,
+      "topic": "Tuple",
+      "definition": "Tuple-ன்னா relational table-ல் இருக்கும் ஒரு single row.",
+      "explanation": "ஒரு entity-யோட complete record-ஐ tuple represent பண்ணும்."
+    },
+    {
+      "number": 6,
+      "topic": "Attribute",
+      "definition": "Attribute-ன்னா ஒரு entity-யோட property அல்லது characteristic.",
+      "explanation": "Table-ல attribute ஒரு column-ஆ represent ஆகும்."
+    },
+    {
+      "number": 7,
+      "topic": "Primary Key",
+      "definition": "Primary Key-ன்னா table-ல ஒவ்வொரு record-ஐயும் uniquely identify பண்ண use ஆகுற key.",
+      "explanation": "இதுல duplicate values-உம் NULL values-உம் இருக்கக் கூடாது."
+    },
+    {
+      "number": 8,
+      "topic": "Foreign Key",
+      "definition": "Foreign Key-ன்னா இன்னொரு table-ஓட key-ஐ reference பண்ணுற attribute.",
+      "explanation": "இது mainly இரண்டு tables-க்கு relationship establish பண்ண use ஆகும்."
+    },
+    {
+      "number": 9,
+      "topic": "Candidate Key",
+      "definition": "Candidate Key-ன்னா ஒரு record-ஐ uniquely identify பண்ண முடிகிற attribute அல்லது attributes set.",
+      "explanation": "Candidate Keys-ல ஒரு key-ஐ Primary Key-ஆ select பண்ணுவாங்க."
+    },
+    {
+      "number": 10,
+      "topic": "Super Key",
+      "definition": "Super Key-ன்னா ஒரு record-ஐ uniquely identify பண்ண முடிகிற attributes set.",
+      "explanation": "Unique identification-க்கு தேவையில்லாத extra attributes-உம் இதுல இருக்கலாம்."
+    },
+    {
+      "number": 11,
+      "topic": "Alternate Key",
+      "definition": "Alternate Key-ன்னா Primary Key-ஆ select பண்ணப்படாத Candidate Key.",
+      "explanation": "இதுவும் records-ஐ uniquely identify பண்ண முடியும்."
+    },
+    {
+      "number": 12,
+      "topic": "Composite Key",
+      "definition": "Composite Key-ன்னா two or more attributes சேர்ந்து form ஆகுற key.",
+      "explanation": "Multiple columns-ஐ together use பண்ணி ஒரு record-ஐ uniquely identify பண்ணும்."
+    },
+    {
+      "number": 13,
+      "topic": "Unique Key",
+      "definition": "Unique Key-ன்னா ஒரு column-ல duplicate values வராம ensure பண்ணுற constraint.",
+      "explanation": "இது table-ல values unique-ஆ இருக்க help பண்ணும்."
+    },
+    {
+      "number": 14,
+      "topic": "NULL Value",
+      "definition": "NULL-ன்னா missing, unknown அல்லது available இல்லாத value-ஐ represent பண்ணும்.",
+      "explanation": "NULL என்பது zero-வும் empty string-உம் கிடையாது; இதுக்கு different meaning இருக்கு."
+    },
+    {
+      "number": 15,
+      "topic": "Entity",
+      "definition": "Entity-ன்னா real-world-ல இருக்கும் ஒரு object; அதோட data database-ல store பண்ணுவோம்.",
+      "explanation": "Examples: Student, Employee, Product, Department."
+    },
+    {
+      "number": 16,
+      "topic": "Entity Set",
+      "definition": "Entity Set-ன்னா same type-ஓட multiple entities-ஓட collection.",
+      "explanation": "Example: College-ல இருக்கும் எல்லா students-உம் சேர்ந்து Student Entity Set ஆகும்."
+    },
+    {
+      "number": 17,
+      "topic": "ER Diagram",
+      "definition": "ER Diagram-ன்னா entities, attributes, relationships-ஐ graphical-ஆ represent பண்ணுற diagram.",
+      "explanation": "Database structure-ஐ design பண்ண இது use ஆகும்."
+    },
+    {
+      "number": 18,
+      "topic": "Relationship",
+      "definition": "Relationship-ன்னா two or more entities-க்கு இடையில இருக்கும் association.",
+      "explanation": "Example: Student ஒரு Course-ஐ enroll பண்ணிருக்கலாம்."
+    },
+    {
+      "number": 19,
+      "topic": "Cardinality",
+      "definition": "Cardinality-ன்னா ஒரு relationship-ல எவ்வளவு entities participate பண்ண முடியும்-னு define பண்ணும்.",
+      "explanation": "Common types: 1:1, 1:N, M:N."
+    },
+    {
+      "number": 20,
+      "topic": "Normalization",
+      "definition": "Normalization-ன்னா data redundancy-ஐ reduce பண்ண database data-வை organize பண்ணுற process.",
+      "explanation": "Data-வை related tables-ஆ divide பண்ணி consistency improve பண்ணும்."
+    },
+    {
+      "number": 21,
+      "topic": "First Normal Form (1NF)",
+      "definition": "1NF-ன்னா every attribute-உம் atomic அல்லது single value contain பண்ணணும்.",
+      "explanation": "ஒரு cell-ல multiple values இல்லாம single value மட்டும் இருக்கணும்."
+    },
+    {
+      "number": 22,
+      "topic": "Second Normal Form (2NF)",
+      "definition": "2NF-ன்னா table 1NF-ல இருக்கணும் மற்றும் partial dependency இருக்கக் கூடாது.",
+      "explanation": "Every non-key attribute-உம் complete Primary Key-ஐ depend பண்ணணும்."
+    },
+    {
+      "number": 23,
+      "topic": "Third Normal Form (3NF)",
+      "definition": "3NF-ன்னா table 2NF-ல இருக்கணும் மற்றும் transitive dependency இருக்கக் கூடாது.",
+      "explanation": "Non-key attributes Primary Key-ஐ மட்டும் depend பண்ணணும்."
+    },
+    {
+      "number": 24,
+      "topic": "BCNF",
+      "definition": "BCNF-ன்னா 3NF-ஓட stronger version.",
+      "explanation": "Relation-ல இருக்கும் every determinant-உம் Candidate Key-ஆ இருக்கணும்."
+    },
+    {
+      "number": 25,
+      "topic": "Denormalization",
+      "definition": "Denormalization-ன்னா database-ல intentional-ஆ redundancy add பண்ணுற process.",
+      "explanation": "Main-ஆ query performance improve பண்ண use பண்ணுவாங்க."
+    },
+    {
+      "number": 26,
+      "topic": "SQL",
+      "definition": "SQL-ன்னா Structured Query Language; relational database-ஓட communicate பண்ண use பண்ணுவோம்.",
+      "explanation": "Data-வை create, retrieve, modify, manage பண்ண SQL commands use பண்ணுவோம்."
+    },
+    {
+      "number": 27,
+      "topic": "DDL",
+      "definition": "DDL-ன்னா Data Definition Language.",
+      "explanation": "Database structure-ஐ define அல்லது modify பண்ண CREATE, ALTER, DROP மாதிரி commands use பண்ணும்."
+    },
+    {
+      "number": 28,
+      "topic": "DML",
+      "definition": "DML-ன்னா Data Manipulation Language.",
+      "explanation": "Database data-வை manipulate பண்ண INSERT, UPDATE, DELETE மாதிரி commands use பண்ணும்."
+    },
+    {
+      "number": 29,
+      "topic": "DCL",
+      "definition": "DCL-ன்னா Data Control Language.",
+      "explanation": "Database access permissions-ஐ manage பண்ண GRANT மற்றும் REVOKE மாதிரி commands use பண்ணும்."
+    },
+    {
+      "number": 30,
+      "topic": "TCL",
+      "definition": "TCL-ன்னா Transaction Control Language.",
+      "explanation": "Transactions-ஐ manage பண்ண COMMIT, ROLLBACK, SAVEPOINT மாதிரி commands use பண்ணும்."
+    },
+    {
+      "number": 31,
+      "topic": "SELECT",
+      "definition": "SELECT-ன்னா database-ல இருந்து data retrieve பண்ண use ஆகுற SQL command.",
+      "explanation": "Specific columns அல்லது conditions based-ஆ records retrieve பண்ணலாம்."
+    },
+    {
+      "number": 32,
+      "topic": "JOIN",
+      "definition": "JOIN-ன்னா multiple tables-ல இருக்கும் related data-வை combine பண்ண use ஆகுற SQL operation.",
+      "explanation": "Related columns-ஐ base பண்ணி tables-ஐ join பண்ணுவோம்."
+    },
+    {
+      "number": 33,
+      "topic": "INNER JOIN",
+      "definition": "INNER JOIN-ன்னா இரண்டு tables-லயும் matching records-ஐ மட்டும் return பண்ணும்.",
+      "explanation": "Match ஆகாத records result-ல include ஆகாது."
+    },
+    {
+      "number": 34,
+      "topic": "LEFT JOIN",
+      "definition": "LEFT JOIN-ன்னா left table-ஓட all records-உம், right table-ஓட matching records-உம் return பண்ணும்.",
+      "explanation": "Right table-ல match இல்லனா NULL values வரும்."
+    },
+    {
+      "number": 35,
+      "topic": "RIGHT JOIN",
+      "definition": "RIGHT JOIN-ன்னா right table-ஓட all records-உம், left table-ஓட matching records-உம் return பண்ணும்.",
+      "explanation": "Left table-ல match இல்லனா NULL values வரும்."
+    },
+    {
+      "number": 36,
+      "topic": "FULL OUTER JOIN",
+      "definition": "FULL OUTER JOIN-ன்னா இரண்டு tables-ஓட matching மற்றும் non-matching records-ஐ return பண்ணும்.",
+      "explanation": "Match இல்லாத side-ல NULL values வரும்."
+    },
+    {
+      "number": 37,
+      "topic": "View",
+      "definition": "View-ன்னா SQL query base பண்ணி create பண்ணுற virtual table.",
+      "explanation": "Underlying tables-ல இருக்கும் data-வை query result form-ல display பண்ணும்."
+    },
+    {
+      "number": 38,
+      "topic": "Index",
+      "definition": "Index-ன்னா database-ல data retrieval speed-ஐ improve பண்ண use ஆகுற structure.",
+      "explanation": "Search fast-ஆ ஆகும்; ஆனா additional storage தேவைப்படும்."
+    },
+    {
+      "number": 39,
+      "topic": "Transaction",
+      "definition": "Transaction-ன்னா database operations-ஓட ஒரு logical unit.",
+      "explanation": "Transaction successful-ஆ complete ஆகணும்; இல்லனா appropriate-ஆ rollback பண்ணலாம்."
+    },
+    {
+      "number": 40,
+      "topic": "ACID Properties",
+      "definition": "ACID-ன்னா Atomicity, Consistency, Isolation, Durability.",
+      "explanation": "Reliable மற்றும் correct transaction processing-ஐ ensure பண்ண இந்த four properties use ஆகும்."
+    },
+    {
+      "number": 41,
+      "topic": "Atomicity",
+      "definition": "Atomicity-ன்னா transaction complete-ஆ execute ஆகணும் அல்லது execute ஆகாம இருக்கணும்.",
+      "explanation": "ஒரு operation fail ஆனா entire transaction-ஐ rollback பண்ண முடியும்."
+    },
+    {
+      "number": 42,
+      "topic": "Consistency",
+      "definition": "Consistency-ன்னா transaction database-ஐ ஒரு valid state-ல இருந்து இன்னொரு valid state-க்கு கொண்டு போகணும்.",
+      "explanation": "Database constraints transaction-க்கு முன்னும் பின்னும் satisfy ஆகணும்."
+    },
+    {
+      "number": 43,
+      "topic": "Isolation",
+      "definition": "Isolation-ன்னா concurrent transactions one another-ஐ improper-ஆ affect பண்ணாம இருக்குற property.",
+      "explanation": "ஒரு transaction-ஓட intermediate changes-ஐ மற்ற transactions direct-ஆ affect பண்ண முடியாது."
+    },
+    {
+      "number": 44,
+      "topic": "Durability",
+      "definition": "Durability-ன்னா committed transaction changes permanent-ஆ store ஆகுற property.",
+      "explanation": "System failure வந்தாலும் committed changes retain ஆகும்."
+    },
+    {
+      "number": 45,
+      "topic": "Concurrency Control",
+      "definition": "Concurrency Control-ன்னா multiple transactions same time-ல execute ஆகும்போது manage பண்ணுற process.",
+      "explanation": "Conflicts-ஐ prevent பண்ணி database consistency-ஐ maintain பண்ணும்."
+    },
+    {
+      "number": 46,
+      "topic": "Deadlock",
+      "definition": "Deadlock-ன்னா transactions one another hold பண்ணுற resources-க்காக indefinitely wait பண்ணுற situation.",
+      "explanation": "Deadlock வந்தா transactions continue ஆகாம stuck ஆகிடும்."
+    },
+    {
+      "number": 47,
+      "topic": "Stored Procedure",
+      "definition": "Stored Procedure-ன்னா database-ல store பண்ணி வைக்கப்பட்ட precompiled SQL statements-ஓட collection.",
+      "explanation": "Specific operation-ஐ repeated-ஆ execute பண்ண use பண்ணலாம்."
+    },
+    {
+      "number": 48,
+      "topic": "Trigger",
+      "definition": "Trigger-ன்னா specific database event நடக்கும்போது automatically execute ஆகுற database operation.",
+      "explanation": "INSERT, UPDATE, DELETE மாதிரி events-க்கு trigger activate ஆகலாம்."
+    },
+    {
+      "number": 49,
+      "topic": "Cursor",
+      "definition": "Cursor-ன்னா query result-ல rows-ஐ one by one process பண்ண use ஆகுற database mechanism.",
+      "explanation": "Individual rows-ஐ sequential-ஆ process பண்ண இது useful-ஆ இருக்கும்."
+    },
+    {
+      "number": 50,
+      "topic": "Referential Integrity",
+      "definition": "Referential Integrity-ன்னா tables-க்கு இடையில இருக்கும் relationships valid-ஆ maintain பண்ணுற rule.",
+      "explanation": "Foreign Key value referenced table-ல இருக்கும் valid existing record-ஐ reference பண்ணணும்."
+    }
+  ]
+}
