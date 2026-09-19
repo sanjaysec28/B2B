@@ -1,0 +1,11 @@
+{
+  "name": "Vaani - AI Speech to Text",
+  "description": "AI-powered real-time English learning companion for Tamil-medium students.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
+
